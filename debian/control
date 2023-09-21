@@ -1,14 +1,23 @@
-Source: dtkcore
+Source: dtk6core
 Section: libdevel
 Priority: optional
-Maintainer: Deepin Packages Builder <packages@deepin.com>
-Build-Depends: debhelper-compat ( =12), pkg-config,
- qttools5-dev-tools, qttools5-dev, qtbase5-private-dev, doxygen,
- libgsettings-qt-dev, libgtest-dev, libdtkcommon-dev, cmake,
- libuchardet-dev, libicu-dev, libsystemd-dev, libspdlog-dev
+Maintainer: Deepin Packages Builder <packages@deepin.org>
+Build-Depends:
+ debhelper-compat (= 12),
+ pkg-config,
+ qt6-tools-dev,
+ qt6-base-private-dev,
+ doxygen,
+ libgtest-dev,
+ cmake,
+ libuchardet-dev,
+ libicu-dev,
+ libsystemd-dev,
+ libdtkcommon-dev (>= 5.6.4),
+ libspdlog-dev
 Standards-Version: 3.9.8
 
-Package: libdtkcore5
+Package: libdtk6core
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, lshw
 Multi-Arch: same
@@ -17,25 +26,25 @@ Description: Deepin Tool Kit Core library
  .
  This package contains the shared libraries.
 
-Package: libdtkcore5-bin
+Package: libdtk6core-bin
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
- libdtkcore5( =${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, libdtk6core (= ${binary:Version})
 Description: Deepin Tool Kit Core Utilities
  DtkCore is base devel library of Deepin Qt/C++ applications.
  .
  This package contains the utilities of DtkCore
 
-Package: libdtkcore-dev
+Package: libdtk6core-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libdtkcore5( =${binary:Version}), libdtkcommon-dev(>=5.6.16)
+Depends: ${shlibs:Depends}, ${misc:Depends}, libdtk6core (= ${binary:Version})
 Description: Deepin Tool Kit Core Devel library
  DtkCore is base devel library of Deepin Qt/C++ applications.
  .
  This package contains the header files and static libraries of DtkCore
 
-Package: libdtkcore-doc
+Package: libdtk6core-doc
 Architecture: any
+Build-Profiles: <!nodoc>
 Description: Deepin Tool Kit Core (document)
  DtkCore is base devel library of Deepin Qt/C++ applications.
  .

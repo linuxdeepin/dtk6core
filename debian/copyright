@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: dtkcore
-Source: https://github.com/linuxdeepin/dtkcore
+Upstream-Name: dtk6core
+Source: https://github.com/linuxdeepin/dtk6core
 
 Files: *
 Copyright: 2017 Deepin Technology Co., Ltd.
