@@ -88,6 +88,12 @@ static QString NoAppId;
 
     @brief The unique identity of the backend configuration
 
+/*!
+@~english
+ @fn bool DConfigBackend::isDefaultValue(const QString &key) const = 0
+
+ @sa DConfig::isDefaultValue()
+
  */
 
 DConfigBackend::~DConfigBackend()
@@ -202,6 +208,13 @@ public:
         return vg.isValid() ? vg : fallback;
     }
 
+    virtual bool isDefaultValue(const QString &key) const override
+    {
+        // Don't fallback to generic configuration
+        const QVariant &vc = configFile->cacheValue(configCache.get(), key);
+        return !vc.isValid();
+    }
+
     virtual void setValue(const QString &key, const QVariant &value) override
     {
         // setValue's callerAppid is itself instead of config's appId.
@@ -212,8 +225,7 @@ public:
 
     virtual void reset(const QString &key) override
     {
-        const auto &originValue = configFile->meta()->value(key);
-        setValue(key, originValue);
+        setValue(key, QVariant());
     }
 
     virtual QString name() const override
@@ -378,6 +390,17 @@ public:
             return fallback;
         }
         return decodeQDBusArgument(reply.value().variant());
+    }
+
+    virtual bool isDefaultValue(const QString &key) const override
+    {
+        auto reply = config->isDefaultValue(key);
+        reply.waitForFinished();
+        if (reply.isError()) {
+            qWarning() << "Wrong when calling `isDefaultValue`, key:" << key << ", error message:" << reply.error().message();
+            return false;
+        }
+        return reply.value();
     }
 
     virtual void setValue(const QString &key, const QVariant &value) override
@@ -688,6 +711,20 @@ bool DConfig::isValid() const
 {
     D_DC(DConfig);
     return !d->invalid();
+}
+
+/*!
+@~english
+ * @brief Check whether the value is default according to the configuration item name
+ * @param key Configuration Item Name
+ * @return Return `true` if the value isn't been set, otherwise return `false`
+ */
+bool DConfig::isDefaultValue(const QString &key) const
+{
+    D_DC(DConfig);
+    if (d->invalid())
+        return false;
+    return d->backend->isDefaultValue(key);
 }
 
 /*!
