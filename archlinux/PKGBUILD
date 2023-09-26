@@ -1,18 +1,18 @@
 # Maintainer: justforlxz <justforlxz@gmail.com>
-pkgname=dtkcore-git
-pkgver=5.6.16
+pkgname=dtk6core-git
+pkgver=6.0.0
 pkgrel=1
-sourcename=dtkcore
+sourcename=dtk6core
 sourcetars=("$sourcename"_"$pkgver".tar.xz)
 sourcedir="$sourcename"
-pkgdesc='DTK core modules'
+pkgdesc='DTK6 core modules'
 arch=('x86_64' 'aarch64')
-url="https://github.com/linuxdeepin/dtkcore"
+url="https://github.com/linuxdeepin/dtk6core"
 license=('LGPL3')
-depends=('deepin-desktop-base-git' 'gsettings-qt' 'dtkcommon-git' 'lshw' 'uchardet' 'icu' 'libsystemd' 'spdlog')
-makedepends=('git' 'qt5-tools' 'ninja' 'cmake' 'doxygen')
-conflicts=('dtkcore')
-provides=('dtkcore')
+depends=('deepin-desktop-base-git' 'gcc-libs' 'qt6-base' 'dtkcommon-git' 'lshw' 'uchardet' 'icu' 'libsystemd' 'spdlog')
+makedepends=('git' 'qt6-tools' 'ninja' 'cmake' 'doxygen' 'gcc' 'pkg-config')
+conflicts=('dtk6core')
+provides=('dtk6core')
 groups=('deepin-git')
 source=("${sourcetars[@]}")
 sha512sums=('SKIP')
@@ -22,10 +22,10 @@ build() {
   version=$(echo $pkgver | awk -F'[+_~-]' '{print $1}')
   cmake \
     -GNinja \
-    -DMKSPECS_INSTALL_DIR=lib/qt/mkspecs/modules \
-    -DBUILD_DOCS=ON \
+    -DMKSPECS_INSTALL_DIR=lib/qt6/mkspecs/modules \
+    -DBUILD_DOCS=OFF \
     -DBUILD_EXAMPLES=OFF \
-    -DQCH_INSTALL_DESTINATION=share/doc/qt \
+    -DQCH_INSTALL_DESTINATION=share/doc/qt6 \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_BUILD_TYPE=Release \
