@@ -33,7 +33,7 @@ function(dtk_add_dbus_interface _sources _interface _relativename)
         set(_params -m)
     endif()
 
-    get_source_file_property(_skipincludeannotations ${_interface} SKIP_INCLUDEANNOTATIONS)
+    get_source_file_property(_skipincludeannotations ${_interface} SKIP_INCLUDE_ANNOTATIONS)
     if(_skipincludeannotations)
         set(_params ${_params} -S)
     endif()
