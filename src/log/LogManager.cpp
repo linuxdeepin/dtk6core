@@ -4,6 +4,8 @@
 
 #include <QtCore>
 #include "LogManager.h"
+#include "dconfig.h"
+#include <DSGApplication>
 #include <Logger.h>
 #include <ConsoleAppender.h>
 #include <RollingFileAppender.h>
@@ -14,6 +16,7 @@
 
 DCORE_BEGIN_NAMESPACE
 
+#define RULES_KEY ("rules")
 // Courtesy qstandardpaths_unix.cpp
 static void appendOrganizationAndApp(QString &path)
 {
@@ -39,16 +42,79 @@ public:
     {
     }
 
+    DConfig *createDConfig(const QString &appId);
+    void initLoggingRules();
+    void updateLoggingRules();
+
     QString m_format;
     QString m_logPath;
     ConsoleAppender* m_consoleAppender = nullptr;
     RollingFileAppender* m_rollingFileAppender = nullptr;
     JournalAppender* m_journalAppender = nullptr;
+    QScopedPointer<DConfig> m_dsgConfig;
+    QScopedPointer<DConfig> m_fallbackConfig;
 
     DLogManager *q_ptr = nullptr;
     Q_DECLARE_PUBLIC(DLogManager)
 
 };
+
+DConfig *DLogManagerPrivate::createDConfig(const QString &appId)
+{
+    if (appId.isEmpty())
+        return nullptr;
+
+    DConfig *config = DConfig::create(appId, "org.deepin.dtk.preference");
+    if (!config->isValid()) {
+        qWarning() << "Logging rules config is invalid, please check `appId` [" << appId << "]arg is correct";
+        delete config;
+        config = nullptr;
+        return nullptr;
+    }
+
+    QObject::connect(config, &DConfig::valueChanged, config, [this](const QString &key) {
+        if (key != RULES_KEY)
+            return;
+
+        updateLoggingRules();
+    });
+
+    return config;
+}
+
+void DLogManagerPrivate::initLoggingRules()
+{
+    if (qEnvironmentVariableIsSet("DTK_DISABLED_LOGGING_RULES"))
+        return;
+
+    // 1. 未指定 fallbackId 时，以 dsgAppId 为准
+    QString dsgAppId = DSGApplication::id();
+    m_dsgConfig.reset(createDConfig(dsgAppId));
+
+    QString fallbackId = qgetenv("DTK_LOGGING_FALLBACK_APPID");
+    // 2. fallbackId 和 dsgAppId 非空且不等时，都创建和监听变化
+    if (!fallbackId.isEmpty() && fallbackId != dsgAppId)
+        m_fallbackConfig.reset(createDConfig(fallbackId));
+
+    // 3. 默认值和非默认值时，非默认值优先
+    updateLoggingRules();
+}
+
+void DLogManagerPrivate::updateLoggingRules()
+{
+    QVariant var;
+    // 4. 优先看 dsgConfig 是否默认值，其次 fallback 是否默认值
+    if (m_dsgConfig && !m_dsgConfig->isDefaultValue(RULES_KEY)) {
+        var = m_dsgConfig->value(RULES_KEY);
+    } else if (m_fallbackConfig && !m_fallbackConfig->isDefaultValue(RULES_KEY)) {
+        var = m_fallbackConfig->value(RULES_KEY);
+    } else {
+        // do nothing..
+    }
+
+    if (var.isValid())
+        QLoggingCategory::setFilterRules(var.toString().replace(";", "\n"));
+}
 /*!
 @~english
   \class Dtk::Core::DLogManager
@@ -62,6 +128,8 @@ DLogManager::DLogManager()
 {
     spdlog::set_automatic_registration(true);
     spdlog::set_pattern("%v");
+
+    d_ptr->initLoggingRules();
 }
 
 void DLogManager::initConsoleAppender(){
