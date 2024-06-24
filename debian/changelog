@@ -1,3 +1,15 @@
+dtk6core (6.0.17) unstable; urgency=medium
+
+  * sync: from linuxdeepin/dtkcore
+  * sync: from linuxdeepin/dtkcore
+  * sync: from linuxdeepin/dtkcore
+  * sync: from linuxdeepin/dtkcore
+  * fix: add missing dependency for libdtk6core-dev
+    Thanks to zty199
+  * sync: from linuxdeepin/dtkcore
+
+ -- Deepin Packages Builder <packages@deepin.org>  Mon, 24 Jun 2024 05:35:03 +0000
+
 dtk6core (6.0.16) unstable; urgency=medium
 
   * 6.0.16
