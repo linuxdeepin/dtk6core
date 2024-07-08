@@ -9,7 +9,7 @@ pkgdesc='DTK6 core modules'
 arch=('x86_64' 'aarch64')
 url="https://github.com/linuxdeepin/dtk6core"
 license=('LGPL3')
-depends=('deepin-desktop-base-git' 'gcc-libs' 'qt6-base' 'dtkcommon-git' 'lshw' 'uchardet' 'icu' 'libsystemd' 'spdlog')
+depends=('deepin-desktop-base-git' 'gcc-libs' 'qt6-base' 'dtkcommon-git' 'dtk6log-git' 'lshw' 'uchardet' 'icu')
 makedepends=('git' 'qt6-tools' 'ninja' 'cmake' 'doxygen' 'gcc' 'pkg-config')
 conflicts=('dtk6core')
 provides=('dtk6core')
@@ -30,7 +30,6 @@ build() {
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_BUILD_TYPE=Release \
     -DD_DSG_APP_DATA_FALLBACK=/var/dsg/appdata \
-    -DBUILD_WITH_SYSTEMD=ON \
     -DDTK_VERSION=$version
   ninja
 }

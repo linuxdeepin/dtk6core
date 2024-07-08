@@ -12,9 +12,8 @@ Build-Depends:
  cmake,
  libuchardet-dev,
  libicu-dev,
- libsystemd-dev,
  libdtkcommon-dev (>= 5.6.4),
- libspdlog-dev
+ libdtk6log-dev
 Standards-Version: 3.9.8
 
 Package: libdtk6core
@@ -36,7 +35,7 @@ Description: Deepin Tool Kit Core Utilities
 
 Package: libdtk6core-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libdtk6core (= ${binary:Version}), libdtkcommon-dev (>= 5.6.16)
+Depends: ${shlibs:Depends}, ${misc:Depends}, libdtk6core (= ${binary:Version}), libdtkcommon-dev (>= 5.6.16), libdtk6log-dev
 Description: Deepin Tool Kit Core Devel library
  DtkCore is base devel library of Deepin Qt/C++ applications.
  .
