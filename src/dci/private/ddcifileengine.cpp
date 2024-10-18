@@ -30,7 +30,7 @@ Q_LOGGING_CATEGORY(logFE, "dtk.dci.fileengine", QtInfoMsg)
 #define DCI_FILE_SCHEME "dci:"
 #define DCI_FILE_SUFFIX ".dci"
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8 ,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 std::unique_ptr<QAbstractFileEngine> DDciFileEngineHandler::create(const QString &fileName) const
 #else
 QAbstractFileEngine *DDciFileEngineHandler::create(const QString &fileName) const
@@ -39,7 +39,7 @@ QAbstractFileEngine *DDciFileEngineHandler::create(const QString &fileName) cons
     if (!fileName.startsWith(QStringLiteral(DCI_FILE_SCHEME)))
         return nullptr;
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8 ,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     std::unique_ptr<DDciFileEngine> engine(new DDciFileEngine(fileName));
 #else
     DDciFileEngine *engine = new DDciFileEngine(fileName);
@@ -56,7 +56,8 @@ QAbstractFileEngine *DDciFileEngineHandler::create(const QString &fileName) cons
 
 // 共享同个线程内的同个 DDciFile
 static thread_local QHash<QString, QWeakPointer<DDciFile>> sharedDciFile;
-static void doDeleteSharedDciFile(const QString &path, DDciFile *file) {
+static void doDeleteSharedDciFile(const QString &path, DDciFile *file)
+{
     int count = sharedDciFile.remove(path);
     Q_ASSERT(count > 0);
     delete file;
@@ -69,20 +70,18 @@ static DDciFileShared getDciFile(const QString &dciFilePath, bool usePath = true
     }
 
     DDciFileShared shared(usePath ? new DDciFile(dciFilePath) : new DDciFile(),
-                          std::bind(doDeleteSharedDciFile, dciFilePath,
-                                    std::placeholders::_1));
+                          std::bind(doDeleteSharedDciFile, dciFilePath, std::placeholders::_1));
     sharedDciFile[dciFilePath] = shared.toWeakRef();
     return shared;
 }
 
 DDciFileEngineIterator::DDciFileEngineIterator(QDir::Filters filters, const QStringList &nameFilters)
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8 ,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     : QAbstractFileEngineIterator(nullptr, filters, nameFilters)
 #else
     : QAbstractFileEngineIterator(filters, nameFilters)
 #endif
 {
-
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
@@ -93,7 +92,7 @@ QString DDciFileEngineIterator::next()
 }
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8 ,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 bool DDciFileEngineIterator::advance()
 #else
 bool DDciFileEngineIterator::hasNext() const
@@ -101,8 +100,7 @@ bool DDciFileEngineIterator::hasNext() const
 {
     if (!file) {
         const auto paths = DDciFileEngine::resolvePath(path());
-        if (paths.first.isEmpty()
-                || paths.second.isEmpty())
+        if (paths.first.isEmpty() || paths.second.isEmpty())
             return false;
 
         file = getDciFile(paths.first);
@@ -122,7 +120,7 @@ bool DDciFileEngineIterator::hasNext() const
         } else if (fileType == DDciFile::Symlink) {
             if (filters.testFlag(QDir::NoSymLinks))
                 continue;
-        } else { // DDciFile::UnknowFile
+        } else {  // DDciFile::UnknowFile
             continue;
         }
 
@@ -131,7 +129,7 @@ bool DDciFileEngineIterator::hasNext() const
             continue;
 
         nextValid = i;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8 ,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
         current = nextValid;
 #endif
         return true;
@@ -200,8 +198,7 @@ bool DDciFileEngine::open(QIODevice::OpenMode openMode)
         }
     }
 
-    if ((openMode & QIODevice::ExistingOnly)
-            || !(openMode & QIODevice::WriteOnly)) {
+    if ((openMode & QIODevice::ExistingOnly) || !(openMode & QIODevice::WriteOnly)) {
         if (!file->exists(subfilePath)) {
             setError(QFile::OpenError, "The file is not exists");
             return false;
@@ -222,8 +219,7 @@ bool DDciFileEngine::open(QIODevice::OpenMode openMode)
 #endif
 
         // 不存在时尝试新建
-        if (!file->exists(subfilePath)
-                && !file->writeFile(subfilePath, QByteArray())) {
+        if (!file->exists(subfilePath) && !file->writeFile(subfilePath, QByteArray())) {
             return false;
         }
     }
@@ -513,24 +509,22 @@ QAbstractFileEngine::FileFlags DDciFileEngine::fileFlags(QAbstractFileEngine::Fi
 QString DDciFileEngine::fileName(QAbstractFileEngine::FileName file) const
 {
     switch (file) {
-    case AbsoluteName:
-    case CanonicalName:
-    case DefaultName:
-        return QDir::cleanPath(DCI_FILE_SCHEME + dciFilePath + subfilePath);
-    case AbsolutePathName:
-        return QDir::cleanPath(DCI_FILE_SCHEME + dciFilePath);
-    case BaseName:
-        return QFileInfo(subfilePath).baseName();
+        case AbsoluteName:
+        case CanonicalName:
+        case DefaultName:
+            return QDir::cleanPath(DCI_FILE_SCHEME + dciFilePath + subfilePath);
+        case AbsolutePathName:
+            return QDir::cleanPath(DCI_FILE_SCHEME + dciFilePath);
+        case BaseName:
+            return QFileInfo(subfilePath).baseName();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
-    case AbsoluteLinkTarget:
+        case AbsoluteLinkTarget:
 #else
-    case LinkName:
+        case LinkName:
 #endif
-        return this->file->type(subfilePath) == DDciFile::Symlink
-                ? this->file->symlinkTarget(subfilePath)
-                : QString();
-    default:
-        break;
+            return this->file->type(subfilePath) == DDciFile::Symlink ? this->file->symlinkTarget(subfilePath) : QString();
+        default:
+            break;
     }
 
     return QString();
@@ -545,8 +539,7 @@ void DDciFileEngine::setFileName(const QString &fullPath)
     subfilePath.clear();
 
     const auto paths = resolvePath(fullPath, QString(), false);
-    if (paths.first.isEmpty()
-            || paths.second.isEmpty())
+    if (paths.first.isEmpty() || paths.second.isEmpty())
         return;
 
     dciFilePath = paths.first;
@@ -566,19 +559,25 @@ QDateTime DDciFileEngine::fileTime(QAbstractFileEngine::FileTime time) const
 }
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8 ,0)
-QAbstractFileEngine::IteratorUniquePtr DDciFileEngine::beginEntryList(const QString &path, QDir::Filters filters, const QStringList &filterNames)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+QAbstractFileEngine::IteratorUniquePtr
+DDciFileEngine::beginEntryList(const QString &path, QDir::Filters filters, const QStringList &filterNames)
 {
     return QAbstractFileEngine::IteratorUniquePtr(new DDciFileEngineIterator(filters, filterNames));
 }
 #else
 DDciFileEngine::Iterator *DDciFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+#endif
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    return QAbstractFileEngine::IteratorUniquePtr(new DDciFileEngineIterator(filters, filterNames));
+#else
     return new DDciFileEngineIterator(filters, filterNames);
+#endif
 }
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8 ,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 QAbstractFileEngine::IteratorUniquePtr DDciFileEngine::endEntryList()
 #else
 DDciFileEngine::Iterator *DDciFileEngine::endEntryList()
@@ -627,9 +626,7 @@ bool DDciFileEngine::forceSave(bool writeFile) const
     return flushToFile(&file, writeFile);
 }
 
-QPair<QString, QString> DDciFileEngine::resolvePath(const QString &fullPath,
-                                                    const QString &realFilePath,
-                                                    bool needRealFileExists)
+QPair<QString, QString> DDciFileEngine::resolvePath(const QString &fullPath, const QString &realFilePath, bool needRealFileExists)
 {
     if (!fullPath.startsWith(QStringLiteral(DCI_FILE_SCHEME) + realFilePath))
         return {};
@@ -671,8 +668,8 @@ QPair<QString, QString> DDciFileEngine::resolvePath(const QString &fullPath,
         return {};
 
     subfilePath = QDir::cleanPath(formatFullPath.mid(schemeLength + dciFilePath.length()));
-    qCDebug(logFE(), "The DCI file path is: \"%s\", the subfile path is: \"%s\"",
-            qPrintable(dciFilePath), qPrintable(subfilePath));
+    qCDebug(
+        logFE(), "The DCI file path is: \"%s\", the subfile path is: \"%s\"", qPrintable(dciFilePath), qPrintable(subfilePath));
     Q_ASSERT(!subfilePath.isEmpty());
 
     return qMakePair(dciFilePath, subfilePath);

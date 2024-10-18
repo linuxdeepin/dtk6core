@@ -14,7 +14,7 @@ DCORE_BEGIN_NAMESPACE
 extern QString _d_cleanPath(const QString &path);
 extern bool _d_isSubFileOf(const QString &filePath, const QString &directoryPath);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8 ,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 std::unique_ptr<QAbstractFileEngine> DCapFSFileEngineHandler::create(const QString &fileName) const
 {
     return std::unique_ptr<QAbstractFileEngine>(new DCapFSFileEngine(fileName));
@@ -34,13 +34,21 @@ static bool capDirIteraterHasNext(QAbstractFileEngineIterator *it)
         return ret;
     return DVtableHook::callOriginalFun(it, &QAbstractFileEngineIterator::hasNext);
 }
-
-QAbstractFileEngine *DCapFSFileEngineHandler::create(const QString &fileName) const
-{
-    return new DCapFSFileEngine(fileName);
-}
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+std::unique_ptr<QAbstractFileEngine> DCapFSFileEngineHandler::create(const QString &fileName) const
+#else
+QAbstractFileEngine *DCapFSFileEngineHandler::create(const QString &fileName) const
+#endif
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    return std::unique_ptr<QAbstractFileEngine>(new DCapFSFileEngine(fileName));
+#else
+    return new DCapFSFileEngine(fileName);
+#endif
+}
+#endif
 
 class DCapFSFileEnginePrivate : public DObjectPrivate
 {
@@ -57,7 +65,6 @@ DCapFSFileEnginePrivate::DCapFSFileEnginePrivate(const QString &file, DCapFSFile
     : DObjectPrivate(qq)
     , file(file)
 {
-
 }
 
 bool DCapFSFileEnginePrivate::canReadWrite(const QString &path) const
@@ -75,20 +82,16 @@ bool DCapFSFileEnginePrivate::canReadWrite(const QString &path) const
     }
 
     auto paths = DCapManager::instance()->paths();
-    return std::any_of(paths.cbegin(), paths.cend(),
-                       std::bind(_d_isSubFileOf, target, std::placeholders::_1));
+    return std::any_of(paths.cbegin(), paths.cend(), std::bind(_d_isSubFileOf, target, std::placeholders::_1));
 }
 
 DCapFSFileEngine::DCapFSFileEngine(const QString &file)
     : QFSFileEngine(file)
     , DObject(*new DCapFSFileEnginePrivate(file, this))
 {
-
 }
 
-DCapFSFileEngine::~DCapFSFileEngine()
-{
-}
+DCapFSFileEngine::~DCapFSFileEngine() {}
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
 bool DCapFSFileEngine::open(QIODevice::OpenMode openMode, std::optional<QFile::Permissions> permissions)
@@ -217,17 +220,23 @@ QStringList DCapFSFileEngine::entryList(QDir::Filters filters, const QStringList
     return QFSFileEngine::entryList(filters, filterNames);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8 ,0)
-QAbstractFileEngine::IteratorUniquePtr DCapFSFileEngine::beginEntryList(const QString &path, QDir::Filters filters, const QStringList &filterNames)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+QAbstractFileEngine::IteratorUniquePtr
+DCapFSFileEngine::beginEntryList(const QString &path, QDir::Filters filters, const QStringList &filterNames)
 {
     auto ret = QFSFileEngine::beginEntryList(path, filters, filterNames);
     return ret;
 }
 #else
 QAbstractFileEngine::Iterator *DCapFSFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+#endif
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    auto ret = QFSFileEngine::beginEntryList(path, filters, filterNames);
+#else
     auto ret = QFSFileEngine::beginEntryList(filters, filterNames);
     DVtableHook::overrideVfptrFun(ret, &QAbstractFileEngineIterator::hasNext, &capDirIteraterHasNext);
+#endif
     return ret;
 }
 #endif
@@ -239,4 +248,3 @@ bool DCapFSFileEngine::canReadWrite(const QString &path) const
 }
 
 DCORE_END_NAMESPACE
-
