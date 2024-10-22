@@ -48,7 +48,6 @@ QAbstractFileEngine *DCapFSFileEngineHandler::create(const QString &fileName) co
     return new DCapFSFileEngine(fileName);
 #endif
 }
-#endif
 
 class DCapFSFileEnginePrivate : public DObjectPrivate
 {
@@ -239,7 +238,6 @@ QAbstractFileEngine::Iterator *DCapFSFileEngine::beginEntryList(QDir::Filters fi
 #endif
     return ret;
 }
-#endif
 
 bool DCapFSFileEngine::canReadWrite(const QString &path) const
 {

@@ -575,7 +575,6 @@ DDciFileEngine::Iterator *DDciFileEngine::beginEntryList(QDir::Filters filters, 
     return new DDciFileEngineIterator(filters, filterNames);
 #endif
 }
-#endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 QAbstractFileEngine::IteratorUniquePtr DDciFileEngine::endEntryList()
