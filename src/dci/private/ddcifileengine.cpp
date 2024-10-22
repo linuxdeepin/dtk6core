@@ -567,14 +567,10 @@ DDciFileEngine::beginEntryList(const QString &path, QDir::Filters filters, const
 }
 #else
 DDciFileEngine::Iterator *DDciFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
-#endif
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-    return QAbstractFileEngine::IteratorUniquePtr(new DDciFileEngineIterator(filters, filterNames));
-#else
     return new DDciFileEngineIterator(filters, filterNames);
-#endif
 }
+#endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 QAbstractFileEngine::IteratorUniquePtr DDciFileEngine::endEntryList()
