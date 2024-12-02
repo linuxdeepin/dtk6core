@@ -36,15 +36,14 @@ using DDciFileShared = QSharedPointer<DDciFile>;
 class DDciFileEngineIterator : public QAbstractFileEngineIterator
 {
     friend class DDciFileEngine;
-
 public:
     DDciFileEngineIterator(QDir::Filters filters, const QStringList &nameFilters);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-    bool advance() override;
-#else
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
     QString next() override;
     bool hasNext() const override;
+#else
+    bool advance() override;
 #endif
 
     QString currentFileName() const override;
@@ -59,7 +58,6 @@ private:
 class DDciFileEngine : public QAbstractFileEngine
 {
     friend class DDciFileEngineIterator;
-
 public:
     explicit DDciFileEngine(const QString &fullPath);
     ~DDciFileEngine();
@@ -112,6 +110,7 @@ public:
 #endif
 
     typedef DDciFileEngineIterator Iterator;
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     IteratorUniquePtr beginEntryList(const QString &path, QDir::Filters filters, const QStringList &filterNames) override;
     IteratorUniquePtr endEntryList() override;
@@ -123,7 +122,8 @@ public:
     qint64 read(char *data, qint64 maxlen) override;
     qint64 write(const char *data, qint64 len) override;
 
-    bool extension(Extension extension, const ExtensionOption *option = 0, ExtensionReturn *output = 0) override;
+    bool extension(Extension extension, const ExtensionOption *option = 0,
+                   ExtensionReturn *output = 0) override;
     bool supportsExtension(Extension extension) const override;
 
     bool cloneTo(QAbstractFileEngine *target) override;
@@ -138,8 +138,9 @@ private:
      * 是 DCI 文件的内部路径。
      * 函数返回的第一个数据是"真实文件路径"。
      */
-    static QPair<QString, QString>
-    resolvePath(const QString &fullPath, const QString &realFilePath = QString(), bool needRealFileExists = true);
+    static QPair<QString, QString> resolvePath(const QString &fullPath,
+                                               const QString &realFilePath = QString(),
+                                               bool needRealFileExists = true);
 
     DDciFileShared file;
     QString dciFilePath;
@@ -149,5 +150,6 @@ private:
     QByteArray fileData;
     QBuffer *fileBuffer = nullptr;
 };
+
 
 DCORE_END_NAMESPACE
