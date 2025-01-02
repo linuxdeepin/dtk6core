@@ -4,7 +4,7 @@
 specfile_path: rpm/dtkcore.spec
 
 # add or remove files that should be synced
-synced_files:
+files_to_sync:
     - rpm/dtkcore.spec
     - .packit.yaml
 
