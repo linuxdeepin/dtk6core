@@ -168,6 +168,7 @@ int main(int argc, char *argv[]) {
                  << "#include <QProperty>\n"
                  << "#endif\n";
 
+    headerStream << "#include <DSGApplication>\n";
     headerStream << "#include <DConfig>\n\n";
     headerStream << "class " << className << " : public QObject {\n";
     headerStream << "    Q_OBJECT\n\n";
@@ -249,7 +250,9 @@ int main(int argc, char *argv[]) {
                  << "    Q_CLASSINFO(\"DConfigFileVersion\", \"" << version <<"\")\n\n"
                  << "public:\n"
                  << "    explicit " << className
-                 << R"((QThread *thread, DTK_CORE_NAMESPACE::DConfigBackend *backend, const QString &name, const QString &appId, const QString &subpath, QObject *parent)
+                 << R"((QThread *thread, DTK_CORE_NAMESPACE::DConfigBackend *backend,
+                        const QString &name, const QString &appId, const QString &subpath,
+                        bool isGeneric, QObject *parent)
                 : QObject(parent) {
         if (!thread->isRunning()) {
             qWarning() << QLatin1String("Warning: The provided thread is not running.");
@@ -259,17 +262,27 @@ int main(int argc, char *argv[]) {
         worker->moveToThread(thread);
         QMetaObject::invokeMethod(worker, [=, this]() {
             DTK_CORE_NAMESPACE::DConfig *config = nullptr;
-            if (backend) {
-                if (appId.isNull()) {
-                    config = DTK_CORE_NAMESPACE::DConfig::create(backend, name, subpath, nullptr);
+            if (isGeneric) {
+                if (backend) {
+                    config = DTK_CORE_NAMESPACE::DConfig::createGeneric(backend, name, subpath, nullptr);
                 } else {
-                    config = DTK_CORE_NAMESPACE::DConfig::create(backend, appId, name, subpath, nullptr);
+                    config = DTK_CORE_NAMESPACE::DConfig::createGeneric(name, subpath, nullptr);
                 }
             } else {
-                if (appId.isNull()) {
-                    config = DTK_CORE_NAMESPACE::DConfig::create(name, subpath, nullptr);
+                if (backend) {
+                    if (appId.isNull()) {
+                        config = DTK_CORE_NAMESPACE::DConfig::create(backend, DTK_CORE_NAMESPACE::DSGApplication::id(),
+                                                                     name, subpath, nullptr);
+                    } else {
+                        config = DTK_CORE_NAMESPACE::DConfig::create(backend, appId, name, subpath, nullptr);
+                    }
                 } else {
-                    config = DTK_CORE_NAMESPACE::DConfig::create(appId, name, subpath, nullptr);
+                    if (appId.isNull()) {
+                        config = DTK_CORE_NAMESPACE::DConfig::create(DTK_CORE_NAMESPACE::DSGApplication::id(),
+                                                                     name, subpath, nullptr);
+                    } else {
+                        config = DTK_CORE_NAMESPACE::DConfig::create(appId, name, subpath, nullptr);
+                    }
                 }
             }
             if (!config) {
@@ -290,22 +303,43 @@ int main(int argc, char *argv[]) {
         headerStream << "    static " << className << "* create(QThread *thread, const QString &appId = {}, const QString &subpath = {}, QObject *parent = nullptr)\n";
     else
         headerStream << "    static " << className << "* create(const QString &appId = {}, const QString &subpath = {}, QObject *parent = nullptr, QThread *thread = DTK_CORE_NAMESPACE::DConfig::globalThread())\n";
-    headerStream << "    { return new " << className << "(thread, nullptr, " << jsonFileString << ", appId, subpath, parent); }\n";
+    headerStream << "    { return new " << className << "(thread, nullptr, " << jsonFileString << ", appId, subpath, false, parent); }\n";
     if (parser.isSet(forceRequestThread))
         headerStream << "    static " << className << "* create(QThread *thread, DTK_CORE_NAMESPACE::DConfigBackend *backend, const QString &appId = {}, const QString &subpath = {}, QObject *parent = nullptr)\n";
     else
         headerStream << "    static " << className << "* create(DTK_CORE_NAMESPACE::DConfigBackend *backend, const QString &appId = {}, const QString &subpath = {}, QObject *parent = nullptr, QThread *thread = DTK_CORE_NAMESPACE::DConfig::globalThread())\n";
-    headerStream << "    { return new " << className << "(thread, backend, " << jsonFileString << ", appId, subpath, parent); }\n";
+    headerStream << "    { return new " << className << "(thread, backend, " << jsonFileString << ", appId, subpath, false, parent); }\n";
     if (parser.isSet(forceRequestThread))
         headerStream << "    static " << className << "* createByName(QThread *thread, const QString &name, const QString &appId = {}, const QString &subpath = {}, QObject *parent = nullptr)\n";
     else
         headerStream << "    static " << className << "* createByName(const QString &name, const QString &appId = {}, const QString &subpath = {}, QObject *parent = nullptr, QThread *thread = DTK_CORE_NAMESPACE::DConfig::globalThread())\n";
-    headerStream << "    { return new " << className << "(thread, nullptr, name, appId, subpath, parent); }\n";
+    headerStream << "    { return new " << className << "(thread, nullptr, name, appId, subpath, false, parent); }\n";
     if (parser.isSet(forceRequestThread))
         headerStream << "    static " << className << "* createByName(QThread *thread, DTK_CORE_NAMESPACE::DConfigBackend *backend, const QString &name, const QString &appId = {}, const QString &subpath = {}, QObject *parent = nullptr)\n";
     else
         headerStream << "    static " << className << "* createByName(DTK_CORE_NAMESPACE::DConfigBackend *backend, const QString &name, const QString &appId = {}, const QString &subpath = {}, QObject *parent = nullptr, QThread *thread = DTK_CORE_NAMESPACE::DConfig::globalThread())\n";
-    headerStream << "    { return new " << className << "(thread, backend, name, appId, subpath, parent); }\n";
+    headerStream << "    { return new " << className << "(thread, backend, name, appId, subpath, false, parent); }\n";
+
+    if (parser.isSet(forceRequestThread))
+        headerStream << "    static " << className << "* createGeneric(QThread *thread, const QString &subpath = {}, QObject *parent = nullptr)\n";
+    else
+        headerStream << "    static " << className << "* createGeneric(const QString &subpath = {}, QObject *parent = nullptr, QThread *thread = DTK_CORE_NAMESPACE::DConfig::globalThread())\n";
+    headerStream << "    { return new " << className << "(thread, nullptr, " << jsonFileString << ", {}, subpath, true, parent); }\n";
+    if (parser.isSet(forceRequestThread))
+        headerStream << "    static " << className << "* create(QThread *thread, DTK_CORE_NAMESPACE::DConfigBackend *backend, const QString &subpath = {}, QObject *parent = nullptr)\n";
+    else
+        headerStream << "    static " << className << "* create(DTK_CORE_NAMESPACE::DConfigBackend *backend, const QString &subpath = {}, QObject *parent = nullptr, QThread *thread = DTK_CORE_NAMESPACE::DConfig::globalThread())\n";
+    headerStream << "    { return new " << className << "(thread, backend, " << jsonFileString << ", {}, subpath, true, parent); }\n";
+    if (parser.isSet(forceRequestThread))
+        headerStream << "    static " << className << "* createGenericByName(QThread *thread, const QString &name, const QString &subpath = {}, QObject *parent = nullptr)\n";
+    else
+        headerStream << "    static " << className << "* createGenericByName(const QString &name, const QString &subpath = {}, QObject *parent = nullptr, QThread *thread = DTK_CORE_NAMESPACE::DConfig::globalThread())\n";
+    headerStream << "    { return new " << className << "(thread, nullptr, name, {}, subpath, true, parent); }\n";
+    if (parser.isSet(forceRequestThread))
+        headerStream << "    static " << className << "* createGenericByName(QThread *thread, DTK_CORE_NAMESPACE::DConfigBackend *backend, const QString &name, const QString &subpath = {}, QObject *parent = nullptr)\n";
+    else
+        headerStream << "    static " << className << "* createGenericByName(DTK_CORE_NAMESPACE::DConfigBackend *backend, const QString &name, const QString &subpath = {}, QObject *parent = nullptr, QThread *thread = DTK_CORE_NAMESPACE::DConfig::globalThread())\n";
+    headerStream << "    { return new " << className << "(thread, backend, name, {}, subpath, true, parent); }\n";
 
     // Destructor
     headerStream << "    ~" << className << R"(() {
@@ -377,7 +411,7 @@ int main(int argc, char *argv[]) {
                      << "    }\n";
         headerStream << "#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)\n";
         headerStream << "    QBindable<" << property.typeName << "> bindable" << property.capitalizedPropertyName << "() {\n"
-                     << "        return QBindable<" << property.typeName << ">(this, " << property.propertyNameString << ");\n"
+                     << "        return QBindable<" << property.typeName << ">(this, \"" << property.propertyName << "\");\n"
                      << "    }\n";
         headerStream << "#endif\n";
 
