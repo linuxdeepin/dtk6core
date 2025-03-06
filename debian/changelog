@@ -1,3 +1,10 @@
+dtk6core (6.0.32) unstable; urgency=medium
+
+  * sync: from linuxdeepin/dtkcore
+  * sync: from linuxdeepin/dtkcore
+
+ -- YeShanShan <yeshanshan@uniontech.com>  Thu, 06 Mar 2025 17:37:40 +0800
+
 dtk6core (6.0.31) unstable; urgency=medium
 
   * sync: from linuxdeepin/dtkcore
