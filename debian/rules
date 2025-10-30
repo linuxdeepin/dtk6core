@@ -24,4 +24,4 @@ override_dh_auto_configure:
 	dh_auto_configure -- -DBUILD_EXAMPLES=OFF -DBUILD_DOCS=ON -DBUILD_VERSION=$(BUILD_VER) -DDTK_VERSION=$(PACK_VER) -DD_DSG_APP_DATA_FALLBACK=/var/dsg/appdata -DBUILD_WITH_SYSTEMD=ON
 
 override_dh_makeshlibs:
-	dh_makeshlibs -V "libdtk6core (>= $(shell echo $(VERSION) | cut -d '.' -f 1,2))"
+	dh_makeshlibs -V "libdtk6core (>= $(shell echo $(VERSION) | cut -d '.' -f 1,2,3))"
