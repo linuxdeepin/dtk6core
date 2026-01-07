@@ -9,8 +9,10 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 # dbus
 set(CMAKE_CXX_FLAGS "-fno-access-control")
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+endif()
 
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
@@ -37,7 +39,7 @@ find_package(GTest REQUIRED)
 include(GoogleTest)
 
 # for test.so
-set(TEST_SO_NAME vtabletest${DTK_VERSION_MAJOR})
+set(TEST_SO_NAME vtabletest${DTK_NAME_SUFFIX})
 add_subdirectory(./testso)
 
 # test
@@ -49,7 +51,7 @@ file(GLOB FackDBus
     "./fakedbus/*.cpp"
 )
 
-if(DTK_VERSION_MAJOR)
+if(NOT DTK5)
     list(REMOVE_ITEM TEST_SOURCE "${CMAKE_CURRENT_LIST_DIR}/ut_gsettingsbackend.cpp")
     list(REMOVE_ITEM TEST_SOURCE "${CMAKE_CURRENT_LIST_DIR}/ut_dasync.cpp")
 endif()
@@ -116,6 +118,11 @@ target_include_directories( ${BIN_NAME} PUBLIC
     ../include/filesystem/
     ../include/
     ./testso/
+)
+
+# Set RPATH to find libvtabletest*.so in the build directory
+set_target_properties(${BIN_NAME} PROPERTIES
+    SKIP_BUILD_RPATH FALSE
 )
 
 gtest_discover_tests(${BIN_NAME})
