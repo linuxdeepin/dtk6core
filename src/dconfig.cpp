@@ -13,6 +13,7 @@
 #include <QSettings>
 #endif
 #include "dobject_p.h"
+#include <QThread>
 #include <DSGApplication>
 
 #include <QLoggingCategory>
@@ -24,6 +25,9 @@
 DCORE_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(cfLog)
+#if !defined(Q_OS_LINUX)
+Q_LOGGING_CATEGORY(cfLog, "dtk.dsg.config")
+#endif
 static QString NoAppId;
 
 /*!

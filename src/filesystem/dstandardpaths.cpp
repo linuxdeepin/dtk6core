@@ -4,9 +4,12 @@
 
 #include "dstandardpaths.h"
 
+#include <QDir>
 #include <QProcessEnvironment>
+#ifndef Q_OS_WIN
 #include <unistd.h>
 #include <pwd.h>
+#endif
 
 DCORE_BEGIN_NAMESPACE
 
@@ -118,7 +121,11 @@ QString DStandardPaths::homePath()
     if (!home.isEmpty())
         return QString::fromLocal8Bit(home);
 
+#ifdef Q_OS_WIN
+    return QDir::homePath();
+#else
     return homePath(getuid());
+#endif
 }
 
 QString DStandardPaths::path(DStandardPaths::XDG type)
@@ -146,7 +153,11 @@ QString DStandardPaths::path(DStandardPaths::XDG type)
         const QByteArray &path = qgetenv("XDG_RUNTIME_DIR");
         if (!path.isEmpty())
             return QString::fromLocal8Bit(path);
+#ifdef Q_OS_WIN
+        return QDir::tempPath();
+#else
         return QStringLiteral("/run/user/") + QString::number(getuid());
+#endif
     }
     case XDG::StateHome: {
         const QByteArray &path = qgetenv("XDG_STATE_HOME");
@@ -213,6 +224,10 @@ QString DStandardPaths::filePath(DStandardPaths::DSG type, const QString fileNam
 
 QString DStandardPaths::homePath(const uint uid)
 {
+#ifdef Q_OS_WIN
+    Q_UNUSED(uid)
+    return QDir::homePath();
+#else
     struct passwd *pw = getpwuid(uid);
 
     if (!pw)
@@ -220,6 +235,7 @@ QString DStandardPaths::homePath(const uint uid)
 
     const char *homedir = pw->pw_dir;
     return QString::fromLocal8Bit(homedir);
+#endif
 }
 
 DCORE_END_NAMESPACE

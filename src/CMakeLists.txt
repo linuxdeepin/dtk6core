@@ -8,19 +8,19 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 find_package(Dtk${DTK_VERSION_MAJOR}Log REQUIRED)
-find_package(DBus1 REQUIRED)
 if(LINUX)
-  find_package(PkgConfig REQUIRED)
-  find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS DBus)
-
+  find_package(DBus1 REQUIRED)
+endif()
+find_package(PkgConfig REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS DBus)
+if(${QT_VERSION_MAJOR} EQUAL 6)
+    if(${Qt6Core_VERSION} VERSION_GREATER_EQUAL 6.10.0)
+        find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS CorePrivate)
+    endif()
+endif()
+if(LINUX)
   if(${QT_VERSION_MAJOR} EQUAL 5)
       pkg_check_modules(QGSettings REQUIRED IMPORTED_TARGET gsettings-qt) #Dtk6 removed.
-  elseif(${QT_VERSION_MAJOR} EQUAL 6)
-      if(${Qt6Core_VERSION} VERSION_GREATER_EQUAL 6.10.0)
-          find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS CorePrivate)
-      endif()
-  else()
-      message(FATAL_ERROR "Unsupported Qt version: ${QT_VERSION_MAJOR}")
   endif()
 endif()
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Xml)
@@ -101,7 +101,9 @@ else()
   target_link_libraries(
     ${LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::DBus
     Qt${QT_VERSION_MAJOR}::Xml
+    Dtk${DTK_VERSION_MAJOR}::Log
   )
   target_link_libraries(${LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::CorePrivate
@@ -127,9 +129,12 @@ target_compile_definitions(${LIB_NAME} PRIVATE
     LIBDTKCORE_LIBRARY
 )
 
-target_link_libraries(${LIB_NAME} PRIVATE
-  dbus-1
-)
+if(LINUX)
+  target_link_libraries(${LIB_NAME} PRIVATE
+    dbus-1
+  )
+endif()
+target_link_libraries(${LIB_NAME} PRIVATE iconv)
 target_include_directories(${LIB_NAME} PRIVATE
   ${uchardet_INCLUDE_DIRS}
 )

@@ -4,6 +4,27 @@
 
 #include "dsgapplication.h"
 
+#ifdef Q_OS_WIN
+// Windows stub - D-Bus and pidfd are not available
+#include <QCoreApplication>
+
+DCORE_BEGIN_NAMESPACE
+
+QByteArray DSGApplication::id()
+{
+    return QCoreApplication::applicationName().toLocal8Bit();
+}
+
+QByteArray DSGApplication::getId(qint64 pid)
+{
+    Q_UNUSED(pid)
+    return QByteArray();
+}
+
+DCORE_END_NAMESPACE
+
+#else // Q_OS_LINUX
+
 #include <sys/syscall.h>
 #include <unistd.h>
 
@@ -308,3 +329,5 @@ QByteArray DSGApplication::getId(qint64 pid)
 }
 
 DCORE_END_NAMESPACE
+
+#endif // Q_OS_WIN

@@ -5,6 +5,10 @@
 #include "dsysinfo.h"
 #include "ddesktopentry.h"
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 #include <QFile>
 #include <QLocale>
 #include <QStorageInfo>

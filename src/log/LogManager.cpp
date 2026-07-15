@@ -8,7 +8,9 @@
 #include <Logger.h>
 #include <ConsoleAppender.h>
 #include <RollingFileAppender.h>
+#if (defined BUILD_WITH_SYSTEMD && defined Q_OS_LINUX)
 #include <JournalAppender.h>
+#endif
 
 #include "dstandardpaths.h"
 #include "dconfig_org_deepin_dtk_preference.hpp"
@@ -49,7 +51,9 @@ public:
     QString m_logPath;
     ConsoleAppender* m_consoleAppender = nullptr;
     RollingFileAppender* m_rollingFileAppender = nullptr;
+#if (defined BUILD_WITH_SYSTEMD && defined Q_OS_LINUX)
     JournalAppender* m_journalAppender = nullptr;
+#endif
     QScopedPointer<dconfig_org_deepin_dtk_preference> m_dsgConfig;
     QScopedPointer<dconfig_org_deepin_dtk_preference> m_fallbackConfig;
 

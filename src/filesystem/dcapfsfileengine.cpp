@@ -221,6 +221,7 @@ bool DCapFSFileEngine::setSize(qint64 size)
     return QFSFileEngine::setSize(size);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 11, 0)
 QStringList DCapFSFileEngine::entryList(QDir::Filters filters, const QStringList &filterNames) const
 {
     D_DC(DCapFSFileEngine);
@@ -228,6 +229,7 @@ QStringList DCapFSFileEngine::entryList(QDir::Filters filters, const QStringList
         return {};
     return QFSFileEngine::entryList(filters, filterNames);
 }
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 1)
 QAbstractFileEngine::IteratorUniquePtr DCapFSFileEngine::beginEntryList(const QString &path, QDirListing::IteratorFlags filters, const QStringList &filterNames)
 #elif QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
